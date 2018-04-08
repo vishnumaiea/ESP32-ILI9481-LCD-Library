@@ -4,7 +4,7 @@
 //  ## ESP32-ILI9481-LCD-Library ##                                       //
 //  ILI9481 320 x 480 LCD driver and graphics library for ESP32 boards    //
 //                                                                        //
-//  Filename : ESP32_ILI9481.h                                            //
+//  Filename : ESP32_ILI9481.h                                          //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -14,7 +14,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : IST 11:00 AM 08-04-2018, Sunday                  //
+//  File last modified : IST 11:34 AM 08-04-2018, Sunday                  //
 //                                                                        //
 //========================================================================//
 
@@ -77,8 +77,11 @@ class LCD_ILI9481 {
     // uint8_t dataPins [] = {PD0, PD1, PD2, PD3, PD4, PD5, PD6, PD7};
     uint8_t _bus_width;
     uint8_t _rotation;
+
     friend class fontAwesome;
     friend class fontClass;
+    friend class buttonClass;
+    friend class boxClass;
 
   public:
     int _width = Width; //becasue we can change these later if needed
