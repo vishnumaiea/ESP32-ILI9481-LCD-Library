@@ -1,5 +1,22 @@
 
 //========================================================================//
+//                                                                        //
+//  ## ESP32-ILI9481-LCD-Library ##                                       //
+//  ILI9481 320 x 480 LCD driver and graphics library for ESP32 boards    //
+//                                                                        //
+//  Filename : ESP32_ILI9481.cpp                                          //
+//  Author : Vishnu M Aiea                                                //
+//  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
+//  Author's website : www.vishnumaiea.in                                 //
+//  Initial release : IST 11:51 PM 07-04-2018, Saturday                   //
+//  License : GNU GPL version 3.0                                         //
+//  Additional source license/s :                                         //
+//    1. BSD license @ Adafruit Industries                                //
+//       https://github.com/adafruit/Adafruit-GFX-Library                 //
+//                                                                        //
+//  File last modified : IST 11:00 AM 08-04-2018, Sunday                  //
+//                                                                        //
+//========================================================================//
 
 #include "ESP32_ILI9481.h"
 
@@ -24,9 +41,10 @@
 // #define PD7   22    //DB15 - D22
 
 //========================================================================//
+//LCD functions
 
 LCD_ILI9481::LCD_ILI9481 (uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g, uint8_t h,
-                               uint8_t i, uint8_t j, uint8_t k, uint8_t l) {
+                          uint8_t i, uint8_t j, uint8_t k, uint8_t l) {
   _PD0 = a;
   _PD1 = b;
   _PD2 = c;
@@ -678,13 +696,9 @@ void LCD_ILI9481::drawIcon (fontAwesome* icon, int16_t x, int16_t y, uint16_t co
 
   //iterate through the _width of the glyph
   for(int i=0; i < (icon->fontArray[0]); i++) { //finds start of each set of vertical bytes
-
     //get a single set of vertical bytes
-    for(int k=1; k <= icon->verticalByteCount; k++) {
-      verticalBytes [k-1] = icon->fontArray[k + (i * icon->verticalByteCount)]; //copy the set of vertical bytes
-    }
-
-    for(int j=0; j < icon->verticalByteCount; j++) { //iterates through each set of vertical bytes
+    for(int j=0; j < icon->verticalByteCount; j++) {
+      verticalBytes [j] = icon->fontArray[(j+1) + (i * icon->verticalByteCount)]; //copy the set of vertical bytes
       if(verticalBytes[j] != 0) { //don't display if a byte is zero
         for(int m=0; m < 8; m++) { //iterates through each pixel of a byte
           if((unsigned(verticalBytes[j] >> m)) & 0x1) { //check if a bit is 1
@@ -709,13 +723,9 @@ void LCD_ILI9481::drawChar (char letter, int16_t x, int16_t y, uint16_t color, u
 
   //iterate through the width of the glyph
   for(int i=0; i < (selectedFont->fontArray[iterateStep]); i++) { //finds start of each set of vertical bytes
-
     //get a single set of vertical bytes
-    for(int k=1; k <= selectedFont->verticalByteCount; k++) {
-      verticalBytes [k-1] = selectedFont->fontArray[iterateStep + k + (i * selectedFont->verticalByteCount)]; //copy the set of vertical bytes
-    }
-
-    for(int j=0; j < selectedFont->verticalByteCount; j++) { //iterates though each set of vertical bytes
+    for(int j=0; j < selectedFont->verticalByteCount; j++) {
+      verticalBytes [j] = selectedFont->fontArray[iterateStep + (j+1) + (i * selectedFont->verticalByteCount)]; //copy the set of vertical bytes
       if(verticalBytes[j] != 0) { //don't display if a byte is zero
         for(int m=0; m < 8; m++) { //iterates though each pixel of a byte
           if((unsigned(verticalBytes[j] >> m)) & 0x1) { //check if a bit is 1
@@ -810,11 +820,9 @@ void fontAwesome::getSize() {
 
   //iterate through the width of the glyph
   for(int i=0; i < (fontArray[0]); i++) { //finds start of each set of vertical bytes
-
     //get a single set of vertical bytes
     for(int j=0; j < verticalByteCount; j++) {
       verticalBytes [j] = fontArray[(j+1) + (i * verticalByteCount)]; //copy the set of vertical bytes
-
       if(verticalBytes[j] != 0) { //don't display if a byte is zero
         areAllBytesZero = false;
         nonZeroByteFound = true;
