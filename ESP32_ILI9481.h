@@ -1,10 +1,28 @@
 
 //========================================================================//
+//                                                                        //
+//  ## ESP32-ILI9481-LCD-Library ##                                       //
+//  ILI9481 320 x 480 LCD driver and graphics library for ESP32 boards    //
+//                                                                        //
+//  Filename : ESP32_ILI9481.h                                          //
+//  Author : Vishnu M Aiea                                                //
+//  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
+//  Author's website : www.vishnumaiea.in                                 //
+//  Initial release : IST 11:51 PM 07-04-2018, Saturday                   //
+//  License : GNU GPL version 3.0                                         //
+//  Additional source license/s :                                         //
+//    1. BSD license @ Adafruit Industries                                //
+//       https://github.com/adafruit/Adafruit-GFX-Library                 //
+//                                                                        //
+//  File last modified : IST 11:00 AM 08-04-2018, Sunday                  //
+//                                                                        //
+//========================================================================//
 
 #include <Arduino.h>
 #include <stdint.h>
 
 //========================================================================//
+//class declarations
 
 class fontClass;
 class fontAwesome;
@@ -45,7 +63,7 @@ class boxClass;
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; } //swaps two 16 bit values
 
 //========================================================================//
-//display specific parameters
+//LCD class
 
 static const int Width = 320; //constants
 static const int Height = 480;
@@ -61,7 +79,7 @@ class LCD_ILI9481 {
     uint8_t _rotation;
     friend class fontAwesome;
     friend class fontClass;
-    
+
   public:
     int _width = Width; //becasue we can change these later if needed
     int _height = Height; //eg. in setRotation()
@@ -69,7 +87,7 @@ class LCD_ILI9481 {
     //------------------------------------------------------------------------//
 
     LCD_ILI9481 (uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t,
-                      uint8_t, uint8_t, uint8_t, uint8_t, uint8_t); //for 8-bit interface (total 12 pins)
+                 uint8_t, uint8_t, uint8_t, uint8_t, uint8_t); //for 8-bit interface (total 12 pins)
     void initializeDisplay (void); //resets the display
     void startDisplay (void); //update config registers with default values
     void setRotation (int); //set rotation of the screen
