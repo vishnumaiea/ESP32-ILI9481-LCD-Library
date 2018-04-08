@@ -4,7 +4,7 @@
 //  ## ESP32-ILI9481-LCD-Library ##                                       //
 //  ILI9481 320 x 480 LCD driver and graphics library for ESP32 boards    //
 //                                                                        //
-//  Filename : ESP32_ILI9481.h                                          //
+//  Filename : ESP32_ILI9481.h                                            //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
