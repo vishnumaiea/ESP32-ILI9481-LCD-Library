@@ -14,7 +14,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : IST 11:00 AM 08-04-2018, Sunday                  //
+//  File last modified : IST 11:17 AM 08-04-2018, Sunday                  //
 //                                                                        //
 //========================================================================//
 
@@ -692,16 +692,16 @@ void LCD_ILI9481::fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, 
 
 void LCD_ILI9481::drawIcon (fontAwesome* icon, int16_t x, int16_t y, uint16_t color, uint16_t bg) {
 
-  char verticalBytes [icon->verticalByteCount]; //for vertical bytes
+  char verticalByte = 0; //for vertical bytes
 
   //iterate through the _width of the glyph
   for(int i=0; i < (icon->fontArray[0]); i++) { //finds start of each set of vertical bytes
     //get a single set of vertical bytes
     for(int j=0; j < icon->verticalByteCount; j++) {
-      verticalBytes [j] = icon->fontArray[(j+1) + (i * icon->verticalByteCount)]; //copy the set of vertical bytes
-      if(verticalBytes[j] != 0) { //don't display if a byte is zero
+      verticalByte = icon->fontArray[(j+1) + (i * icon->verticalByteCount)]; //copy the set of vertical bytes
+      if(verticalByte != 0) { //don't display if a byte is zero
         for(int m=0; m < 8; m++) { //iterates through each pixel of a byte
-          if((unsigned(verticalBytes[j] >> m)) & 0x1) { //check if a bit is 1
+          if((unsigned(verticalByte >> m)) & 0x1) { //check if a bit is 1
             drawPixel(x+i, y + m + (8*j), color); //if a bit is 1, then draw pixel with color
           }
           else {
@@ -718,17 +718,17 @@ void LCD_ILI9481::drawIcon (fontAwesome* icon, int16_t x, int16_t y, uint16_t co
 
 void LCD_ILI9481::drawChar (char letter, int16_t x, int16_t y, uint16_t color, uint16_t bg, fontClass* selectedFont) {
 
-  char verticalBytes [selectedFont->verticalByteCount]; //for vertical bytes
+  char verticalByte = 0; //for vertical bytes
   int iterateStep = ((letter - selectedFont->startChar) * selectedFont->charByteLength); //bytes need to be jumped to acquire the starting of the next char
 
   //iterate through the width of the glyph
   for(int i=0; i < (selectedFont->fontArray[iterateStep]); i++) { //finds start of each set of vertical bytes
     //get a single set of vertical bytes
     for(int j=0; j < selectedFont->verticalByteCount; j++) {
-      verticalBytes [j] = selectedFont->fontArray[iterateStep + (j+1) + (i * selectedFont->verticalByteCount)]; //copy the set of vertical bytes
-      if(verticalBytes[j] != 0) { //don't display if a byte is zero
+      verticalByte = selectedFont->fontArray[iterateStep + (j+1) + (i * selectedFont->verticalByteCount)]; //copy the set of vertical bytes
+      if(verticalByte != 0) { //don't display if a byte is zero
         for(int m=0; m < 8; m++) { //iterates though each pixel of a byte
-          if((unsigned(verticalBytes[j] >> m)) & 0x1) { //check if a bit is 1
+          if((unsigned(verticalByte >> m)) & 0x1) { //check if a bit is 1
             drawPixel(x+i, y + m + (8*j), color); //if a bit is 1, then draw pixel with color
           }
           else {
@@ -808,7 +808,7 @@ fontAwesome::fontAwesome (const char* a, int w, int h, int c, int v, uint32_t u,
 //an offset is simply how many lines of empty pixels are before a valid black pixel
 
 void fontAwesome::getSize() {
-  char verticalBytes [verticalByteCount]; //for vertical bytes
+  char verticalByte = 0; //for vertical bytes
 
   bool areAllBytesZero = true; //whether all bytes in a verticl set are zero
   bool nonZeroByteFound = false; //whether any non-zero bytes found in any vertical set
@@ -822,13 +822,13 @@ void fontAwesome::getSize() {
   for(int i=0; i < (fontArray[0]); i++) { //finds start of each set of vertical bytes
     //get a single set of vertical bytes
     for(int j=0; j < verticalByteCount; j++) {
-      verticalBytes [j] = fontArray[(j+1) + (i * verticalByteCount)]; //copy the set of vertical bytes
-      if(verticalBytes[j] != 0) { //don't display if a byte is zero
+      verticalByte = fontArray[(j+1) + (i * verticalByteCount)]; //copy the set of vertical bytes
+      if(verticalByte != 0) { //don't display if a byte is zero
         areAllBytesZero = false;
         nonZeroByteFound = true;
         glyphOffsetRight = i; //if there's a non-zero vertical byte in a cloumn, save it. This will eventually find the right-most pixel
         for(int m=0; m < 8; m++) { //iterates through each pixel of a byte
-          if((unsigned(verticalBytes[j] >> m)) & 0x1) { //check if a bit is 1
+          if((unsigned(verticalByte >> m)) & 0x1) { //check if a bit is 1
             if(glyphOffsetTop < 0) glyphOffsetTop = (j*8)+m; //assign the location of the first pixel found
             else if(glyphOffsetTop > ((j*8)+m)) glyphOffsetTop = (j*8)+m; //now check if any pixel higher than previous found
             if(glyphOffsetBottom < ((j*8)+m)) glyphOffsetBottom = (j*8)+m;
@@ -872,7 +872,7 @@ fontClass::fontClass (const char* a, int w, int h, int c, int v, uint32_t s, uin
 //gets the width, height and offsets of a icon, char or string in pixels
 
 void fontClass::getSize (char letter) {
-  char verticalBytes [verticalByteCount]; //for vertical bytes
+  char verticalByte = 0; //for vertical bytes
   int iterateStep = ((letter - startChar) * charByteLength); //bytes need to be jumped to acquire the starting of the next char
 
   bool areAllBytesZero = true; //whether all bytes in a verticl set are zero
@@ -888,16 +888,13 @@ void fontClass::getSize (char letter) {
 
     //get a single set of vertical bytes
     for(int j=0; j < verticalByteCount; j++) {
-      verticalBytes [j] = fontArray[iterateStep + (j+1) + (i * verticalByteCount)]; //copy the set of vertical bytes
-    // }
-
-    // for(int j=0; j < verticalByteCount; j++) { //iterates through each vertical bytes
-      if(verticalBytes[j] != 0) { //don't display if a byte is zero
+      verticalByte = fontArray[iterateStep + (j+1) + (i * verticalByteCount)]; //copy the set of vertical bytes
+      if(verticalByte != 0) { //don't display if a byte is zero
         areAllBytesZero = false;
         nonZeroByteFound = true; //because there can be empty columns inside a char
         glyphOffsetRight = i; //if there's a non-zero vertical byte in a cloumn, save it. This will eventually find the right-most pixel
         for(int m=0; m < 8; m++) { //iterates through each pixel of a byte
-          if((unsigned(verticalBytes[j] >> m)) & 0x1) { //check if a bit is 1
+          if((unsigned(verticalByte >> m)) & 0x1) { //check if a bit is 1
             if(glyphOffsetTop < 0) glyphOffsetTop = (j*8)+m; //assign the location of the first pixel found
             else if(glyphOffsetTop > ((j*8)+m)) glyphOffsetTop = (j*8)+m; //now check if any pixel higher than previous found
             if(glyphOffsetBottom < ((j*8)+m)) glyphOffsetBottom = (j*8)+m;
