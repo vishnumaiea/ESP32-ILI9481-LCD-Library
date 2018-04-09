@@ -14,11 +14,12 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : IST 11:17 AM 08-04-2018, Sunday                  //
+//  File last modified : +05:30 11:26:00 PM, 09-04-2018, Monday           //
 //                                                                        //
 //========================================================================//
 
 #include "ESP32_ILI9481.h"
+#include "XPT2046_Touchscreen.h"
 
 //========================================================================//
 //parallel data pins for ILI9481 display (recommended)
@@ -688,7 +689,7 @@ void LCD_ILI9481::fillTriangle (int16_t x0, int16_t y0, int16_t x1, int16_t y1, 
 }
 
 //------------------------------------------------------------------------//
-//draws a single icon to the display
+//draws a single icon to the display with background
 
 void LCD_ILI9481::drawIcon (fontAwesome* icon, int16_t x, int16_t y, uint16_t color, uint16_t bg) {
 
@@ -714,7 +715,33 @@ void LCD_ILI9481::drawIcon (fontAwesome* icon, int16_t x, int16_t y, uint16_t co
 }
 
 //------------------------------------------------------------------------//
-//draws a single char to the display
+//draws a single icon to the display without background
+
+void LCD_ILI9481::drawIcon (fontAwesome* icon, int16_t x, int16_t y, uint16_t color) {
+
+  char verticalByte = 0; //for vertical bytes
+
+  //iterate through the _width of the glyph
+  for(int i=0; i < (icon->fontArray[0]); i++) { //finds start of each set of vertical bytes
+    //get a single set of vertical bytes
+    for(int j=0; j < icon->verticalByteCount; j++) {
+      verticalByte = icon->fontArray[(j+1) + (i * icon->verticalByteCount)]; //copy the set of vertical bytes
+      if(verticalByte != 0) { //don't display if a byte is zero
+        for(int m=0; m < 8; m++) { //iterates through each pixel of a byte
+          if((unsigned(verticalByte >> m)) & 0x1) { //check if a bit is 1
+            drawPixel(x+i, y + m + (8*j), color); //if a bit is 1, then draw pixel with color
+          }
+          // else {
+          //   drawPixel(x+i, y + m + (8*j), bg); //draw pixel with bg if otherwise
+          // }
+        }
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------//
+//draws a single char to the display with background
 
 void LCD_ILI9481::drawChar (char letter, int16_t x, int16_t y, uint16_t color, uint16_t bg, fontClass* selectedFont) {
 
@@ -741,6 +768,34 @@ void LCD_ILI9481::drawChar (char letter, int16_t x, int16_t y, uint16_t color, u
 }
 
 //------------------------------------------------------------------------//
+//draws a single char to the display without background
+
+void LCD_ILI9481::drawChar (char letter, int16_t x, int16_t y, uint16_t color, fontClass* selectedFont) {
+
+  char verticalByte = 0; //for vertical bytes
+  int iterateStep = ((letter - selectedFont->startChar) * selectedFont->charByteLength); //bytes need to be jumped to acquire the starting of the next char
+
+  //iterate through the width of the glyph
+  for(int i=0; i < (selectedFont->fontArray[iterateStep]); i++) { //finds start of each set of vertical bytes
+    //get a single set of vertical bytes
+    for(int j=0; j < selectedFont->verticalByteCount; j++) {
+      verticalByte = selectedFont->fontArray[iterateStep + (j+1) + (i * selectedFont->verticalByteCount)]; //copy the set of vertical bytes
+      if(verticalByte != 0) { //don't display if a byte is zero
+        for(int m=0; m < 8; m++) { //iterates though each pixel of a byte
+          if((unsigned(verticalByte >> m)) & 0x1) { //check if a bit is 1
+            drawPixel(x+i, y + m + (8*j), color); //if a bit is 1, then draw pixel with color
+          }
+          // else if (bgEnable) {
+          //   drawPixel(x+i, y + m + (8*j), bg); //draw pixel with bg if otherwise
+          // }
+        }
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------//
+//writes a string to the display with background
 
 void LCD_ILI9481::printText (String S, int16_t x, int16_t y, uint16_t color, uint16_t bg, fontClass* selectedFont) {
   char stringBuffer[S.length()+1];
@@ -787,7 +842,72 @@ void LCD_ILI9481::printText (String S, int16_t x, int16_t y, uint16_t color, uin
   }
 }
 
+//------------------------------------------------------------------------//
+//writes a string to the display without background
+
+void LCD_ILI9481::printText (String S, int16_t x, int16_t y, uint16_t color, fontClass* selectedFont) {
+  char stringBuffer[S.length()+1];
+  S.toCharArray(stringBuffer, S.length()+1); //create a char array
+
+  for(int i=0; i < S.length(); i++) {
+    if(((stringBuffer[i] < selectedFont->startChar) || (stringBuffer[i] > selectedFont->endChar)) && (stringBuffer[i] != 32)) { //check for char validity
+      Serial.print("Illegal character found : ");
+      Serial.print((int)stringBuffer[i]);
+      Serial.print(" at ");
+      Serial.println(i);
+      Serial.println("String Length : " + S.length());
+      return;
+    }
+  }
+
+  int cumulatedLength = 0;
+
+  for(int i=0; i < S.length(); i++) {
+    if(i==0) {
+      if(stringBuffer[i] == 32) { //if the char is a space
+        cumulatedLength += 10; //width for space char
+        // Serial.println("Writing space..");
+      }
+      else {
+        // Serial.print("Writing first char : ");
+        // Serial.println(stringBuffer[i]);
+        drawChar(stringBuffer[i], x, y, color, selectedFont);
+        cumulatedLength += selectedFont->fontArray[((stringBuffer[i] - selectedFont->startChar) * selectedFont->charByteLength)] + 2;
+      }
+    }
+    else {
+      if(stringBuffer[i] == 32) { //if the char is a space
+        // Serial.println("Writing space..");
+        cumulatedLength += 10; //width for space char
+      }
+      else {
+        // Serial.print("Writing char : ");
+        // Serial.println(stringBuffer[i]);
+        drawChar(stringBuffer[i], (x + cumulatedLength), y, color, selectedFont);
+        cumulatedLength += selectedFont->fontArray[((stringBuffer[i] - selectedFont->startChar) * selectedFont->charByteLength)] + 2;
+      }
+    }
+  }
+}
+
 //========================================================================//
+
+fontAwesome::fontAwesome (const char* a, int w, int h, int c, int v, uint32_t u, String n, LCD_ILI9481* l) {
+  fontArray = a;
+  fontWidth = w;
+  fontHeight = h;
+  charByteLength = c;
+  verticalByteCount = v;
+  unicodeId = u;
+  name = n;
+  glyphWidth = 0;
+  glyphHeight = 0;
+  glyphX = 0;
+  glyphY = 0;
+  lcdParent = l;
+}
+
+//------------------------------------------------------------------------//
 
 fontAwesome::fontAwesome (const char* a, int w, int h, int c, int v, uint32_t u, String n) {
   fontArray = a;
@@ -801,6 +921,7 @@ fontAwesome::fontAwesome (const char* a, int w, int h, int c, int v, uint32_t u,
   glyphHeight = 0;
   glyphX = 0;
   glyphY = 0;
+  lcdParent = NULL;
 }
 
 //------------------------------------------------------------------------//
@@ -857,6 +978,20 @@ void fontAwesome::getSize() {
 
 //========================================================================//
 
+fontClass::fontClass (const char* a, int w, int h, int c, int v, uint32_t s, uint32_t e, int n, LCD_ILI9481* l) {
+  fontArray = a;
+  fontWidth = w;
+  fontHeight = h;
+  charByteLength = c;
+  verticalByteCount = v;
+  startChar = s;
+  endChar = e;
+  charCount = n;
+  lcdParent = l;
+}
+
+//------------------------------------------------------------------------//
+
 fontClass::fontClass (const char* a, int w, int h, int c, int v, uint32_t s, uint32_t e, int n) {
   fontArray = a;
   fontWidth = w;
@@ -866,6 +1001,7 @@ fontClass::fontClass (const char* a, int w, int h, int c, int v, uint32_t s, uin
   startChar = s;
   endChar = e;
   charCount = n;
+  lcdParent = NULL;
 }
 
 //------------------------------------------------------------------------//
@@ -981,7 +1117,8 @@ void fontClass::getSize (String S) {
 
 buttonClass::buttonClass (int a, int b, int c, int d, int e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
                           String j, fontClass* k, fontAwesome* l, uint16_t m, uint16_t n, uint16_t o, uint16_t p,
-                          bool q, bool r, bool s, bool t, bool u, bool v, bool w, bool x, bool y, bool z) {
+                          bool q, bool r, bool s, bool t, bool u, bool v, bool w, bool x, bool y, bool z,
+                          LCD_ILI9481* aa, XPT2046_Touchscreen* ab) {
   x = a;
   y = b;
   width = c;
@@ -1008,24 +1145,52 @@ buttonClass::buttonClass (int a, int b, int c, int d, int e, uint16_t f, uint16_
   fillHoverEnabled = x;
   labelHoverEnabled = y;
   iconHoverEnabled = z;
+  lcdParent = aa;
+  touchParent = ab;
+  currentTouchState = false;
+  prevTouchState = false;
 }
 
 //------------------------------------------------------------------------//
 
 void buttonClass::draw () {
   if(buttonEnabled) {
-    if(fillEnabled) {
-      // fillRoundRectangle(x, y, width, height, radius, fillColor);
+    if(buttonHoverEnabled && buttonTouched()) {
+      if(fillEnabled) {
+        if(fillHoverEnabled) lcdParent->fillRoundRectangle(x, y, width, height, radius, fillHoverColor);
+        else lcdParent->fillRoundRectangle(x, y, width, height, radius, fillColor);
+      }
+      if(borderEnabled) {
+        if(borderHoverEnabled) lcdParent->drawRoundRectangle(x, y, width, height, radius, borderHoverColor);
+        else lcdParent->drawRoundRectangle(x, y, width, height, radius, borderColor);
+      }
+      if(iconEnabled) {
+        icon->getSize();
+        if(iconHoverEnabled) lcdParent->drawIcon(icon, x+(int((width - icon->glyphWidth)/2)), y+(int((height - icon->glyphHeight)/2)), iconHoverColor); //no need of bg color
+        else lcdParent->drawIcon(icon, x+(int((width - icon->glyphWidth)/2)), y+(int((height - icon->glyphHeight)/2)), iconColor); //no need of bg color
+      }
+      if(labelEnabled) {
+        labelFont->getSize(label);
+        if(labelHoverEnabled) lcdParent->printText(label, x+(int((width - labelFont->glyphWidth)/2)), y+(int((height - labelFont->glyphHeight)/2)), labelHoverColor, labelFont); //no need of bg color
+        else lcdParent->printText(label, x+(int((width - labelFont->glyphWidth)/2)), y+(int((height - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+      }
     }
-    if(borderEnabled) {
-      // drawRoundRectangle(x, y, width, height, radius, borderColor);
-    }
-    if(iconEnabled) {
-      // icon->getSize();
-      // drawIcon(icon, x+(int((width - icon->glyphWidth)/2)), y+(int((height - icon->glyphHeight)/2)), iconColor, fillColor);
-    }
-    if(labelEnabled) {
 
+    else {
+      if(fillEnabled) {
+        lcdParent->fillRoundRectangle(x, y, width, height, radius, fillColor);
+      }
+      if(borderEnabled) {
+        lcdParent->drawRoundRectangle(x, y, width, height, radius, borderColor);
+      }
+      if(iconEnabled) {
+        icon->getSize();
+        lcdParent->drawIcon(icon, x+(int((width - icon->glyphWidth)/2)), y+(int((height - icon->glyphHeight)/2)), iconColor); //no need of bg color
+      }
+      if(labelEnabled) {
+        labelFont->getSize(label);
+        lcdParent->printText(label, x+(int((width - labelFont->glyphWidth)/2)), y+(int((height - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+      }
     }
   }
 }
@@ -1040,6 +1205,13 @@ void buttonClass::show () {
 
 void buttonClass::hide () {
   buttonEnabled = false;
+}
+
+//------------------------------------------------------------------------//
+
+void buttonClass::setXY(int a, int b) {
+  x = a;
+  y = b;
 }
 
 //------------------------------------------------------------------------//
@@ -1148,6 +1320,33 @@ void buttonClass::iconHoverEnable () {
 
 void buttonClass::iconHoverDisable () {
   iconHoverEnabled = false;
+}
+
+//------------------------------------------------------------------------//
+
+bool buttonClass::buttonTouched () {
+  if(touchParent->touched()) {
+    TS_Point p = touchParent->getPoint();
+    if((p.x >= x) && (p.x < (x+width)) && (p.y >= y) && (p.y < (y+height))) {
+      currentTouchState = true;
+      prevTouchState = true;
+      return true;
+    }
+    else {
+      currentTouchState = false;
+    }
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------//
+
+bool buttonClass::buttonPressed () {
+  if((!buttonTouched()) && (prevTouchState)) {
+    prevTouchState = false;
+    return true;
+  }
+  else return false;
 }
 
 //========================================================================//
