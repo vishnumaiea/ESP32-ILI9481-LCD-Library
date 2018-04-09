@@ -4,7 +4,7 @@
 //  ## ESP32-ILI9481-LCD-Library ##                                       //
 //  ILI9481 320 x 480 LCD driver and graphics library for ESP32 boards    //
 //                                                                        //
-//  Filename : ESP32_ILI9481.h                                          //
+//  Filename : ESP32_ILI9481.h                                            //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -14,12 +14,13 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : IST 11:34 AM 08-04-2018, Sunday                  //
+//  File last modified : +05:30 11:24:39 PM, 09-04-2018, Monday           //
 //                                                                        //
 //========================================================================//
 
 #include <Arduino.h>
 #include <stdint.h>
+#include "XPT2046_Touchscreen.h"
 
 //========================================================================//
 //class declarations
@@ -73,7 +74,7 @@ class LCD_ILI9481 {
   private:
     uint8_t _CS_PIN_LCD, _RST_PIN_LCD, _DC_PIN_LCD, _WR_PIN_LCD;
     uint8_t _PD0, _PD1, _PD2, _PD3, _PD4, _PD5, _PD6, _PD7;
-    uint8_t _PD8, _PD9, _PD10, _PD11, _PD12, _PD13, _PD14, _PD15;
+    // uint8_t _PD8, _PD9, _PD10, _PD11, _PD12, _PD13, _PD14, _PD15;
     // uint8_t dataPins [] = {PD0, PD1, PD2, PD3, PD4, PD5, PD6, PD7};
     uint8_t _bus_width;
     uint8_t _rotation;
@@ -122,14 +123,19 @@ class LCD_ILI9481 {
     void fillCircle (int16_t, int16_t, int16_t, uint16_t); //fills a circle with a color
     void fillCircleHelper (int16_t, int16_t, int16_t, uint8_t, int16_t, uint16_t);
     void drawIcon (fontAwesome*, int16_t, int16_t, uint16_t, uint16_t); //draws a single Font Awesome icon
+    void drawIcon (fontAwesome*, int16_t, int16_t, uint16_t); //draws a single Font Awesome icon
     void drawChar (char, int16_t, int16_t, uint16_t, uint16_t, fontClass*); //draws a single char
+    void drawChar (char, int16_t, int16_t, uint16_t, fontClass*); //draws a single char
     void printText (String, int16_t, int16_t, uint16_t, uint16_t, fontClass*); //prints/draws a string
+    void printText (String, int16_t, int16_t, uint16_t, fontClass*); //prints/draws a string
 };
 
 //========================================================================//
 //font awesome icons
 
 class fontAwesome {
+  private:
+    LCD_ILI9481* lcdParent;
   public:
     const char* fontArray;
     int fontWidth; //width of each char (don't worry; char widths are still variable)
@@ -145,6 +151,7 @@ class fontAwesome {
 
     //------------------------------------------------------------------------//
 
+    fontAwesome (const char*, int, int, int, int, uint32_t, String, LCD_ILI9481*);
     fontAwesome (const char*, int, int, int, int, uint32_t, String);
     void getSize(); //calculates the absolute width and height of an icon
 };
@@ -153,6 +160,8 @@ class fontAwesome {
 //font class for ASCII text
 
 class fontClass {
+  private:
+    LCD_ILI9481* lcdParent;
   public:
     const char* fontArray;
     int fontWidth; //width of each char (don't worry; char widths are still variable)
@@ -169,6 +178,7 @@ class fontClass {
 
     //------------------------------------------------------------------------//
 
+    fontClass (const char*, int, int, int, int, uint32_t, uint32_t, int, LCD_ILI9481*);
     fontClass (const char*, int, int, int, int, uint32_t, uint32_t, int);
     void getSize (char); //calculates the absolute width and height of a char
     void getSize (String); //calculates the absolute width and height of a string
@@ -178,6 +188,9 @@ class fontClass {
 //UI button class
 
 class buttonClass {
+  private:
+    LCD_ILI9481* lcdParent;
+    XPT2046_Touchscreen* touchParent;
   public:
     int x;
     int y;
@@ -205,15 +218,18 @@ class buttonClass {
     bool fillHoverEnabled;
     bool labelHoverEnabled;
     bool iconHoverEnabled;
+    bool prevTouchState;
+    bool currentTouchState;
 
     //------------------------------------------------------------------------//
 
     buttonClass (int, int, int, int, int, uint16_t, uint16_t, uint16_t, uint16_t,
                  String, fontClass*, fontAwesome*, uint16_t, uint16_t, uint16_t, uint16_t,
-                 bool, bool, bool, bool, bool, bool, bool, bool, bool, bool);
+                 bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, LCD_ILI9481*, XPT2046_Touchscreen*);
     void draw();
     void show();
     void hide();
+    void setXY(int, int);
     void hoverEnable();
     void hoverDisable();
     void showBorder();
@@ -232,11 +248,15 @@ class buttonClass {
     void hideIcon();
     void iconHoverEnable();
     void iconHoverDisable();
+    bool buttonTouched();
+    bool buttonPressed();
 };
 
 //========================================================================//
 
 class boxClass {
+  private:
+    LCD_ILI9481* lcdParent;
   public:
     int x;
     int y;
