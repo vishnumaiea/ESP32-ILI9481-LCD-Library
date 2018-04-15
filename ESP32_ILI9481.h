@@ -14,7 +14,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 11:24:39 PM, 09-04-2018, Monday           //
+//  File last modified : +05:30 2:06:14 PM, 15-04-2018, Sunday            //
 //                                                                        //
 //========================================================================//
 
@@ -136,7 +136,12 @@ class LCD_ILI9481 {
 class fontAwesome {
   private:
     LCD_ILI9481* lcdParent;
+
   public:
+    friend class fontClass;
+    friend class buttonClass;
+    friend class boxClass;
+
     const char* fontArray;
     int fontWidth; //width of each char (don't worry; char widths are still variable)
     int fontHeight; //font height
@@ -162,7 +167,12 @@ class fontAwesome {
 class fontClass {
   private:
     LCD_ILI9481* lcdParent;
+
   public:
+    friend class fontAwesome;
+    friend class buttonClass;
+    friend class boxClass;
+
     const char* fontArray;
     int fontWidth; //width of each char (don't worry; char widths are still variable)
     int fontHeight; //font height
@@ -191,17 +201,22 @@ class buttonClass {
   private:
     LCD_ILI9481* lcdParent;
     XPT2046_Touchscreen* touchParent;
+
   public:
-    int x;
-    int y;
-    int width;
-    int height;
-    int radius;
+    friend class fontAwesome;
+    friend class fontClass;
+    friend class boxClass;
+
+    int16_t buttonX;
+    int16_t buttonY;
+    int16_t buttonWidth;
+    int16_t buttonHeight;
+    int16_t radius;
     uint16_t borderColor;
     uint16_t borderHoverColor;
     uint16_t fillColor;
     uint16_t fillHoverColor;
-    String label;
+    String labelString;
     fontClass* labelFont;
     fontAwesome* icon;
     uint16_t labelColor;
@@ -220,10 +235,11 @@ class buttonClass {
     bool iconHoverEnabled;
     bool prevTouchState;
     bool currentTouchState;
+    bool stateChange;
 
     //------------------------------------------------------------------------//
 
-    buttonClass (int, int, int, int, int, uint16_t, uint16_t, uint16_t, uint16_t,
+    buttonClass (int16_t, int16_t, int16_t, int16_t, int16_t, uint16_t, uint16_t, uint16_t, uint16_t,
                  String, fontClass*, fontAwesome*, uint16_t, uint16_t, uint16_t, uint16_t,
                  bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, LCD_ILI9481*, XPT2046_Touchscreen*);
     void draw();
@@ -250,6 +266,8 @@ class buttonClass {
     void iconHoverDisable();
     bool buttonTouched();
     bool buttonPressed();
+    void updateState(bool);
+    bool getState();
 };
 
 //========================================================================//
@@ -258,8 +276,8 @@ class boxClass {
   private:
     LCD_ILI9481* lcdParent;
   public:
-    int x;
-    int y;
+    int boxX;
+    int boxY;
     int width;
     int height;
     int radius;
