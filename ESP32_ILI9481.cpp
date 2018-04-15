@@ -14,7 +14,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 11:26:00 PM, 09-04-2018, Monday           //
+//  File last modified : +05:30 2:04:18 PM, 15-04-2018, Sunday            //
 //                                                                        //
 //========================================================================//
 
@@ -988,6 +988,10 @@ fontClass::fontClass (const char* a, int w, int h, int c, int v, uint32_t s, uin
   endChar = e;
   charCount = n;
   lcdParent = l;
+  glyphWidth = 0;
+  glyphHeight = 0;
+  glyphX = 0;
+  glyphY = 0;
 }
 
 //------------------------------------------------------------------------//
@@ -1002,6 +1006,10 @@ fontClass::fontClass (const char* a, int w, int h, int c, int v, uint32_t s, uin
   endChar = e;
   charCount = n;
   lcdParent = NULL;
+  glyphWidth = 0;
+  glyphHeight = 0;
+  glyphX = 0;
+  glyphY = 0;
 }
 
 //------------------------------------------------------------------------//
@@ -1115,20 +1123,20 @@ void fontClass::getSize (String S) {
 
 //========================================================================//
 
-buttonClass::buttonClass (int a, int b, int c, int d, int e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
                           String j, fontClass* k, fontAwesome* l, uint16_t m, uint16_t n, uint16_t o, uint16_t p,
                           bool q, bool r, bool s, bool t, bool u, bool v, bool w, bool x, bool y, bool z,
                           LCD_ILI9481* aa, XPT2046_Touchscreen* ab) {
-  x = a;
-  y = b;
-  width = c;
-  height = d;
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
   radius = e;
   borderColor = f;
   borderHoverColor = g;
   fillColor = h;
   fillHoverColor = i;
-  label = j;
+  labelString = j;
   labelFont = k;
   icon = l;
   labelColor = m;
@@ -1149,48 +1157,60 @@ buttonClass::buttonClass (int a, int b, int c, int d, int e, uint16_t f, uint16_
   touchParent = ab;
   currentTouchState = false;
   prevTouchState = false;
+  stateChange = true;
 }
 
 //------------------------------------------------------------------------//
 
 void buttonClass::draw () {
   if(buttonEnabled) {
-    if(buttonHoverEnabled && buttonTouched()) {
-      if(fillEnabled) {
-        if(fillHoverEnabled) lcdParent->fillRoundRectangle(x, y, width, height, radius, fillHoverColor);
-        else lcdParent->fillRoundRectangle(x, y, width, height, radius, fillColor);
-      }
-      if(borderEnabled) {
-        if(borderHoverEnabled) lcdParent->drawRoundRectangle(x, y, width, height, radius, borderHoverColor);
-        else lcdParent->drawRoundRectangle(x, y, width, height, radius, borderColor);
-      }
-      if(iconEnabled) {
-        icon->getSize();
-        if(iconHoverEnabled) lcdParent->drawIcon(icon, x+(int((width - icon->glyphWidth)/2)), y+(int((height - icon->glyphHeight)/2)), iconHoverColor); //no need of bg color
-        else lcdParent->drawIcon(icon, x+(int((width - icon->glyphWidth)/2)), y+(int((height - icon->glyphHeight)/2)), iconColor); //no need of bg color
-      }
-      if(labelEnabled) {
-        labelFont->getSize(label);
-        if(labelHoverEnabled) lcdParent->printText(label, x+(int((width - labelFont->glyphWidth)/2)), y+(int((height - labelFont->glyphHeight)/2)), labelHoverColor, labelFont); //no need of bg color
-        else lcdParent->printText(label, x+(int((width - labelFont->glyphWidth)/2)), y+(int((height - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+    if(buttonHoverEnabled && (!stateChange) && buttonTouched()) {
+      if(stateChange) {
+        if(fillEnabled) {
+          if(fillHoverEnabled) lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillHoverColor);
+          else lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+        }
+        if(borderEnabled) {
+          if(borderHoverEnabled) lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderHoverColor);
+          else lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+        }
+        if(iconEnabled) {
+          icon->getSize();
+          if(iconHoverEnabled) lcdParent->drawIcon(icon, buttonX+(int((buttonWidth - icon->glyphWidth)/2)), buttonY+(int((buttonHeight - icon->glyphHeight)/2)), iconHoverColor); //no need of bg color
+          else lcdParent->drawIcon(icon, buttonX+(int((buttonWidth - icon->glyphWidth)/2)), buttonY+(int((buttonHeight - icon->glyphHeight)/2)), iconColor); //no need of bg color
+        }
+        if(labelEnabled) {
+          labelFont->getSize(labelString);
+          if(labelHoverEnabled) lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), buttonY+(int((buttonHeight - labelFont->glyphHeight)/2)), labelHoverColor, labelFont); //no need of bg color
+          else lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), buttonY+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+        }
+        updateState(false);
       }
     }
 
     else {
-      if(fillEnabled) {
-        lcdParent->fillRoundRectangle(x, y, width, height, radius, fillColor);
+      if(stateChange) {
+        if(fillEnabled) {
+          lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+        }
+        if(borderEnabled) {
+          lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+        }
+        if(iconEnabled) {
+          icon->getSize();
+          lcdParent->drawIcon(icon, buttonX+(int((buttonWidth - icon->glyphWidth)/2)), buttonY+(int((buttonHeight - icon->glyphHeight)/2)), iconColor); //no need of bg color
+        }
+        if(labelEnabled) {
+          labelFont->getSize(labelString);
+          lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), buttonY+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+        }
+        updateState(false);
       }
-      if(borderEnabled) {
-        lcdParent->drawRoundRectangle(x, y, width, height, radius, borderColor);
-      }
-      if(iconEnabled) {
-        icon->getSize();
-        lcdParent->drawIcon(icon, x+(int((width - icon->glyphWidth)/2)), y+(int((height - icon->glyphHeight)/2)), iconColor); //no need of bg color
-      }
-      if(labelEnabled) {
-        labelFont->getSize(label);
-        lcdParent->printText(label, x+(int((width - labelFont->glyphWidth)/2)), y+(int((height - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
-      }
+    }
+
+    if(buttonPressed()) {
+      Serial.print("Pressed ");
+      Serial.println(labelString);
     }
   }
 }
@@ -1210,8 +1230,8 @@ void buttonClass::hide () {
 //------------------------------------------------------------------------//
 
 void buttonClass::setXY(int a, int b) {
-  x = a;
-  y = b;
+  buttonX = a;
+  buttonY = b;
 }
 
 //------------------------------------------------------------------------//
@@ -1324,22 +1344,43 @@ void buttonClass::iconHoverDisable () {
 
 //------------------------------------------------------------------------//
 
+void buttonClass::updateState(bool a) {
+  stateChange = a;
+}
+
+bool buttonClass::getState() {
+  return stateChange;
+}
+//------------------------------------------------------------------------//
+//checks whether the button is currently being touched
+
 bool buttonClass::buttonTouched () {
-  if(touchParent->touched()) {
-    TS_Point p = touchParent->getPoint();
-    if((p.x >= x) && (p.x < (x+width)) && (p.y >= y) && (p.y < (y+height))) {
+  if(touchParent->touched()) { //check if lcd is being touched
+    // Serial.println("Touched");
+    TS_Point p = touchParent->getPoint(); //get the touched point
+    p.x = map(p.x, 180, 3870, 0, 480);
+    p.y = map(p.y, 180, 3870, 0, 320);
+    // Serial.print("X = ");
+    // Serial.print(p.x);
+    // Serial.print("  Y = ");
+    // Serial.println(p.y);
+    // Serial.print("Tx = ");
+    // Serial.println(buttonX);
+    if((p.x >= buttonX) && (p.x < (buttonX+buttonWidth)) && (p.y >= buttonY) && (p.y < (buttonY+buttonHeight))) {
+      // Serial.println("Button Touched");
+      stateChange = currentTouchState ? false: true;
       currentTouchState = true;
       prevTouchState = true;
       return true;
     }
-    else {
-      currentTouchState = false;
-    }
   }
+  stateChange = currentTouchState ? true: false;
+  currentTouchState = false;
   return false;
 }
 
 //------------------------------------------------------------------------//
+//detects a single press (touch and release) of the button
 
 bool buttonClass::buttonPressed () {
   if((!buttonTouched()) && (prevTouchState)) {
