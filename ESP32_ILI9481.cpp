@@ -5,6 +5,8 @@
 //  ILI9481 320 x 480 LCD driver and graphics library for ESP32 boards    //
 //                                                                        //
 //  Filename : ESP32_ILI9481.cpp                                          //
+//  Description : Part of ILI9481 TFT LCD library.                        //
+//  Library version : 2.4                                                 //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -14,7 +16,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 2:04:18 PM, 15-04-2018, Sunday            //
+//  File last modified : +05:30 10:27:19 PM, 01-05-2018, Tuesday          //
 //                                                                        //
 //========================================================================//
 
@@ -66,6 +68,19 @@ LCD_ILI9481::LCD_ILI9481 (uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e,
 
 void LCD_ILI9481::initializeDisplay() {
   //the following statement won't work on the rev 0 of ESP32 chip
+
+  // GPIO.out_w1ts = (PORT_MASK << _DC_PIN_LCD); //DC high
+  // GPIO.out_w1ts = (PORT_MASK << _CS_PIN_LCD); //CS high
+  // GPIO.out_w1ts = (PORT_MASK << _WR_PIN_LCD); //WR high
+  // GPIO.out_w1ts = (PORT_MASK << _RST_PIN_LCD); //RST high
+  // delay(100);
+  // GPIO.out_w1tc = (PORT_MASK << _DC_PIN_LCD); //RST low
+  // delay(100);
+  // GPIO.out_w1ts = (PORT_MASK << _RST_PIN_LCD); //RST high
+  // delay(100);
+  // GPIO.out_w1tc = (PORT_MASK << _CS_PIN_LCD); //CS low
+
+
   GPIO.out |= (PORT_MASK << _DC_PIN_LCD); //DC high
   GPIO.out |= (PORT_MASK << _CS_PIN_LCD); //CS high
   GPIO.out |= (PORT_MASK << _WR_PIN_LCD); //WR high
@@ -183,6 +198,11 @@ void LCD_ILI9481::writeData (uint8_t inputData) {
   GPIO.out |= (PORT_MASK << _DC_PIN_LCD); //DC high
   GPIO.out |= (PORT_MASK << _WR_PIN_LCD); //WR high
 
+  // GPIO.out_w1tc = (PORT_MASK << _CS_PIN_LCD); //CS low
+  // GPIO.out_w1ts = (PORT_MASK << _RST_PIN_LCD); //RST high
+  // GPIO.out_w1ts = (PORT_MASK << _DC_PIN_LCD); //DC high
+  // GPIO.out_w1ts = (PORT_MASK << _WR_PIN_LCD); //WR high
+
   writeToPins(inputData);
 
   // Serial.print("B : ");
@@ -193,6 +213,16 @@ void LCD_ILI9481::writeData (uint8_t inputData) {
 //writes 8 bit command
 
 void LCD_ILI9481::writeCommand (uint8_t inputCommand) {
+  // GPIO.out_w1tc = (PORT_MASK << _CS_PIN_LCD); //CS low
+  // GPIO.out_w1ts = (PORT_MASK << _RST_PIN_LCD); //RST high
+  // GPIO.out_w1tc = (PORT_MASK << _DC_PIN_LCD); //DC low
+  // GPIO.out_w1ts = (PORT_MASK << _WR_PIN_LCD); //WR high
+  //
+  // writeToPins(inputCommand);
+  //
+  // GPIO.out_w1ts = (PORT_MASK << _DC_PIN_LCD); //DC high
+
+
   GPIO.out &= (~(PORT_MASK << _CS_PIN_LCD)); //CS low
   GPIO.out |= (PORT_MASK << _RST_PIN_LCD); //RST high
   GPIO.out &= (~(PORT_MASK << _DC_PIN_LCD)); //DC low
@@ -210,6 +240,7 @@ void LCD_ILI9481::writeCommand (uint8_t inputCommand) {
 //writes 16 bit data to the 8-bit bus
 
 void LCD_ILI9481::writeData16 (uint16_t inputData) {
+  // GPIO.out_w1ts = (PORT_MASK << _DC_PIN_LCD); //DC high
   GPIO.out |= (PORT_MASK << _DC_PIN_LCD); //DC high
   writeToPins(((inputData >> 8) & 0x00FF));
   writeToPins(inputData & 0x00FF);
@@ -222,6 +253,7 @@ void LCD_ILI9481::writeData16 (uint16_t inputData) {
 //writes 8-bit data to 8-bit bus
 
 void LCD_ILI9481::writeData8 (uint8_t inputData) {
+  // GPIO.out_w1ts = (PORT_MASK << _DC_PIN_LCD); //DC high
   GPIO.out |= (PORT_MASK << _DC_PIN_LCD); //DC high
   writeToPins(inputData);
 
@@ -235,14 +267,24 @@ void LCD_ILI9481::writeData8 (uint8_t inputData) {
 //then the data is shifted right to do this for all 8 bits
 
 void LCD_ILI9481::writeToPins (uint32_t inputData) {
-  ((inputData >> 0) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD0)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD0));
-  ((inputData >> 1) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD1)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD1));
-  ((inputData >> 2) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD2)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD2));
-  ((inputData >> 3) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD3)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD3));
-  ((inputData >> 4) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD4)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD4));
-  ((inputData >> 5) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD5)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD5));
-  ((inputData >> 6) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD6)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD6));
-  ((inputData >> 7) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD7)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD7));
+  ((inputData >> 0) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD0)) : (GPIO.out_w1tc = (PORT_MASK << _PD0));
+  ((inputData >> 1) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD1)) : (GPIO.out_w1tc = (PORT_MASK << _PD1));
+  ((inputData >> 2) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD2)) : (GPIO.out_w1tc = (PORT_MASK << _PD2));
+  ((inputData >> 3) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD3)) : (GPIO.out_w1tc = (PORT_MASK << _PD3));
+  ((inputData >> 4) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD4)) : (GPIO.out_w1tc = (PORT_MASK << _PD4));
+  ((inputData >> 5) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD5)) : (GPIO.out_w1tc = (PORT_MASK << _PD5));
+  ((inputData >> 6) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD6)) : (GPIO.out_w1tc = (PORT_MASK << _PD6));
+  ((inputData >> 7) & 0x01) ? (GPIO.out_w1ts = (PORT_MASK << _PD7)) : (GPIO.out_w1tc = (PORT_MASK << _PD7));
+
+
+  // ((inputData >> 0) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD0)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD0));
+  // ((inputData >> 1) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD1)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD1));
+  // ((inputData >> 2) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD2)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD2));
+  // ((inputData >> 3) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD3)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD3));
+  // ((inputData >> 4) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD4)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD4));
+  // ((inputData >> 5) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD5)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD5));
+  // ((inputData >> 6) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD6)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD6));
+  // ((inputData >> 7) & 0x01) ? (GPIO.out_w1ts |= ((uint32_t)1 << _PD7)) : (GPIO.out_w1tc |= ((uint32_t)1 << _PD7));
 
   GPIO.out_w1tc |= (PORT_MASK << _WR_PIN_LCD); //WR low
   // delayMicroseconds(100);
@@ -891,6 +933,18 @@ void LCD_ILI9481::printText (String S, int16_t x, int16_t y, uint16_t color, fon
 }
 
 //========================================================================//
+//clears the given text area with a color
+
+void LCD_ILI9481::clearText (String S, int16_t x, int16_t y, uint16_t color, fontClass* selectedFont) {
+  selectedFont->getSize(S); //get the width and height of the string
+  // for(int i=0; i < selectedFont->glyphHeight; i++) {
+  //   drawHorizontalLine((selectedFont->glyphX + x), ((selectedFont->glyphY) + i + y), selectedFont->glyphWidth, color); //draw lines over the existing text
+  // }
+
+  fillRectangle((selectedFont->glyphX + x), ((selectedFont->glyphY) + y), selectedFont->glyphWidth, selectedFont->glyphHeight, color); //faster
+}
+
+//========================================================================//
 
 fontAwesome::fontAwesome (const char* a, int w, int h, int c, int v, uint32_t u, String n, LCD_ILI9481* l) {
   fontArray = a;
@@ -1086,7 +1140,7 @@ void fontClass::getSize (String S) {
   int cumulatedLength = 0; //this will yield the string width inclusive of space
   int stringX = 0; //relative X and Y of the smallest rectangle that holds string
   int stringY = 0;
-  int stringWidth = 0; //width and height of that smallest rectangle
+  // int stringWidth = 0; //width and height of that smallest rectangle
   int stringHeight = 0;
 
   for(int i=0; i < S.length(); i++) {
@@ -1117,7 +1171,7 @@ void fontClass::getSize (String S) {
   }
   glyphX = stringX;
   glyphY = stringY;
-  glyphWidth = stringWidth = cumulatedLength - 2; //cumulatedLength will be the effective width of the string
+  glyphWidth = cumulatedLength - 2; //cumulatedLength will be the effective width of the string
   glyphHeight = stringHeight;
 }
 
@@ -1158,6 +1212,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   currentTouchState = false;
   prevTouchState = false;
   stateChange = true;
+  activeState = false;
 }
 
 //------------------------------------------------------------------------//
@@ -1181,8 +1236,8 @@ void buttonClass::draw () {
         }
         if(labelEnabled) {
           labelFont->getSize(labelString);
-          if(labelHoverEnabled) lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), buttonY+(int((buttonHeight - labelFont->glyphHeight)/2)), labelHoverColor, labelFont); //no need of bg color
-          else lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), buttonY+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+          if(labelHoverEnabled) lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), (buttonY-2)+(int((buttonHeight - labelFont->glyphHeight)/2)), labelHoverColor, labelFont); //no need of bg color
+          else lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), (buttonY-2)+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
         }
         updateState(false);
       }
@@ -1202,16 +1257,16 @@ void buttonClass::draw () {
         }
         if(labelEnabled) {
           labelFont->getSize(labelString);
-          lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), buttonY+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+          lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), (buttonY-2)+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
         }
         updateState(false);
       }
     }
 
-    if(buttonPressed()) {
-      Serial.print("Pressed ");
-      Serial.println(labelString);
-    }
+    // if(buttonPressed()) {
+    //   Serial.print("Pressed ");
+    //   Serial.println(labelString);
+    // }
   }
 }
 
@@ -1348,8 +1403,34 @@ void buttonClass::updateState(bool a) {
   stateChange = a;
 }
 
+//------------------------------------------------------------------------//
+
 bool buttonClass::getState() {
   return stateChange;
+}
+
+//------------------------------------------------------------------------//
+
+void buttonClass::activate() {
+  activeState = true;
+}
+
+//------------------------------------------------------------------------//
+
+void buttonClass::deactivate() {
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
+
+void buttonClass::toggleState() {
+  activeState = activeState ? false: true;
+}
+
+//------------------------------------------------------------------------//
+
+void buttonClass::toggleState(bool a) {
+  if(a) activeState = activeState ? false: true;
 }
 //------------------------------------------------------------------------//
 //checks whether the button is currently being touched
@@ -1383,7 +1464,7 @@ bool buttonClass::buttonTouched () {
 //detects a single press (touch and release) of the button
 
 bool buttonClass::buttonPressed () {
-  if((!buttonTouched()) && (prevTouchState)) {
+  if((!currentTouchState) && (prevTouchState)) {
     prevTouchState = false;
     return true;
   }
