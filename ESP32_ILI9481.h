@@ -5,6 +5,8 @@
 //  ILI9481 320 x 480 LCD driver and graphics library for ESP32 boards    //
 //                                                                        //
 //  Filename : ESP32_ILI9481.h                                            //
+//  Description : Part of ILI9481 TFT LCD library.                        //
+//  Library version : 2.4                                                 //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -14,21 +16,13 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 2:06:14 PM, 15-04-2018, Sunday            //
+//  File last modified : +05:30 10:28:11 PM, 01-05-2018, Tuesday          //
 //                                                                        //
 //========================================================================//
 
 #include <Arduino.h>
 #include <stdint.h>
 #include "XPT2046_Touchscreen.h"
-
-//========================================================================//
-//class declarations
-
-class fontClass;
-class fontAwesome;
-class buttonClass;
-class boxClass;
 
 //========================================================================//
 //LCD commands
@@ -62,6 +56,14 @@ class boxClass;
 #define   GAMMA_SETTING                   0xC8U //12 param
 
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; } //swaps two 16 bit values
+
+//========================================================================//
+//class declarations
+
+class fontClass;
+class fontAwesome;
+class buttonClass;
+class boxClass;
 
 //========================================================================//
 //LCD class
@@ -128,6 +130,7 @@ class LCD_ILI9481 {
     void drawChar (char, int16_t, int16_t, uint16_t, fontClass*); //draws a single char
     void printText (String, int16_t, int16_t, uint16_t, uint16_t, fontClass*); //prints/draws a string
     void printText (String, int16_t, int16_t, uint16_t, fontClass*); //prints/draws a string
+    void clearText (String, int16_t, int16_t, uint16_t, fontClass*);
 };
 
 //========================================================================//
@@ -236,6 +239,7 @@ class buttonClass {
     bool prevTouchState;
     bool currentTouchState;
     bool stateChange;
+    bool activeState;
 
     //------------------------------------------------------------------------//
 
@@ -268,6 +272,10 @@ class buttonClass {
     bool buttonPressed();
     void updateState(bool);
     bool getState();
+    void activate();
+    void deactivate();
+    void toggleState();
+    void toggleState(bool);
 };
 
 //========================================================================//
