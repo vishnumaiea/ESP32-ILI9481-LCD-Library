@@ -6,7 +6,7 @@
 //                                                                        //
 //  Filename : ESP32_ILI9481.h                                            //
 //  Description : Part of ILI9481 TFT LCD library.                        //
-//  Library version : 2.4                                                 //
+//  Library version : 2.6                                                 //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -16,7 +16,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 10:28:11 PM, 01-05-2018, Tuesday          //
+//  File last modified : +05:30 11:38:53 PM, 03-05-2018, Thursday         //
 //                                                                        //
 //========================================================================//
 
@@ -221,7 +221,13 @@ class buttonClass {
     uint16_t fillHoverColor;
     String labelString;
     fontClass* labelFont;
+    int labelAlign;
+    int labelOffsetX;
+    int labelOffsetY;
     fontAwesome* icon;
+    int iconAlign;
+    int iconOffsetX;
+    int iconOffsetY;
     uint16_t labelColor;
     uint16_t labelHoverColor;
     uint16_t iconColor;
@@ -242,13 +248,49 @@ class buttonClass {
     bool activeState;
 
     //------------------------------------------------------------------------//
+    //aavashyam ullathu aethaanennu vechaa eduthu kaachikko..!
 
     buttonClass (int16_t, int16_t, int16_t, int16_t, int16_t, uint16_t, uint16_t, uint16_t, uint16_t,
                  String, fontClass*, fontAwesome*, uint16_t, uint16_t, uint16_t, uint16_t,
                  bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, LCD_ILI9481*, XPT2046_Touchscreen*);
+
+    buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                 String j, fontClass* k, int l, int m, int n, fontAwesome* o, uint16_t p, uint16_t q, uint16_t r, uint16_t s,
+                 bool t, bool u, bool v, bool w, bool x, bool y, bool z, bool aa, bool ab, bool ac,
+                 LCD_ILI9481* ad, XPT2046_Touchscreen* ae);
+
+    buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                 String j, fontClass* k, fontAwesome* l, int m, int n, int o, uint16_t p, uint16_t q, uint16_t r, uint16_t s,
+                 bool t, bool u, bool v, bool w, bool x, bool y, bool z, bool aa, bool ab, bool ac,
+                 LCD_ILI9481* ad, XPT2046_Touchscreen* ae);
+
+    buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                 String j, fontClass* k, int l, int m, int n, fontAwesome* o, int p, int q, int r, uint16_t s, uint16_t t, uint16_t u, uint16_t v,
+                 bool w, bool x, bool y, bool z, bool aa, bool ab, bool ac, bool ad, bool ae, bool af,
+                 LCD_ILI9481* ag, XPT2046_Touchscreen* ah);
+
+    buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                 String j, fontClass* k, uint16_t l, uint16_t m, bool n, bool o, bool p, bool q, bool r, bool s, bool t, bool u,
+                 LCD_ILI9481* v, XPT2046_Touchscreen* w);
+
+    buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                 String j, fontClass* k, int l, int m, int n, uint16_t o, uint16_t p, bool q, bool r, bool s, bool t, bool u, bool v, bool w, bool x,
+                 LCD_ILI9481* y, XPT2046_Touchscreen* z);
+
+    buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                 String j, fontAwesome* k, uint16_t l, uint16_t m, bool n, bool o, bool p, bool q, bool r, bool s, bool t, bool u,
+                 LCD_ILI9481* v, XPT2046_Touchscreen* w);
+
+    buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                 String j, fontAwesome* k, int l, int m, int n, uint16_t o, uint16_t p, bool q, bool r, bool s, bool t, bool u, bool v, bool w, bool x,
+                 LCD_ILI9481* y, XPT2046_Touchscreen* z);
+
+
     void draw();
     void show();
     void hide();
+    void reset();
+    void clear(uint32_t);
     void setXY(int, int);
     void hoverEnable();
     void hoverDisable();
