@@ -6,7 +6,7 @@
 //                                                                        //
 //  Filename : ESP32_ILI9481.cpp                                          //
 //  Description : Part of ILI9481 TFT LCD library.                        //
-//  Library version : 2.4                                                 //
+//  Library version : 2.6                                                 //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -16,7 +16,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 10:27:19 PM, 01-05-2018, Tuesday          //
+//  File last modified : +05:30 11:38:38 PM, 03-05-2018, Thursday         //
 //                                                                        //
 //========================================================================//
 
@@ -1028,6 +1028,17 @@ void fontAwesome::getSize() {
 
   glyphWidth = fontWidth - (glyphOffsetLeft + (fontWidth - (glyphOffsetRight + 1)));
   glyphHeight = fontHeight - (glyphOffsetTop + (fontHeight - (glyphOffsetBottom + 1)));
+
+  // Serial.print("getSize(icon) - ");
+  // Serial.println(name);
+  // Serial.print("glyphWidth = ");
+  // Serial.println(glyphWidth);
+  // Serial.print("glyphHeight = ");
+  // Serial.println(glyphHeight);
+  // Serial.print("glyphX = ");
+  // Serial.println(glyphX);
+  // Serial.print("glyphY = ");
+  // Serial.println(glyphY);
 }
 
 //========================================================================//
@@ -1117,6 +1128,17 @@ void fontClass::getSize (char letter) {
 
   glyphWidth = fontWidth - (glyphOffsetLeft + glyphOffsetRight);
   glyphHeight = fontHeight - (glyphOffsetTop + glyphOffsetBottom);
+
+  // Serial.print("getSize(char) - ");
+  // Serial.println(letter);
+  // Serial.print("glyphWidth = ");
+  // Serial.println(glyphWidth);
+  // Serial.print("glyphHeight = ");
+  // Serial.println(glyphHeight);
+  // Serial.print("glyphX = ");
+  // Serial.println(glyphX);
+  // Serial.print("glyphY = ");
+  // Serial.println(glyphY);
 }
 
 //------------------------------------------------------------------------//
@@ -1173,9 +1195,21 @@ void fontClass::getSize (String S) {
   glyphY = stringY;
   glyphWidth = cumulatedLength - 2; //cumulatedLength will be the effective width of the string
   glyphHeight = stringHeight;
+
+  // Serial.print("getSize(String) - ");
+  // Serial.println(S);
+  // Serial.print("glyphWidth = ");
+  // Serial.println(glyphWidth);
+  // Serial.print("glyphHeight = ");
+  // Serial.println(glyphHeight);
+  // Serial.print("glyphX = ");
+  // Serial.println(glyphX);
+  // Serial.print("glyphY = ");
+  // Serial.println(glyphY);
 }
 
 //========================================================================//
+//places the label and icon on the center of the button, no offsets
 
 buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
                           String j, fontClass* k, fontAwesome* l, uint16_t m, uint16_t n, uint16_t o, uint16_t p,
@@ -1192,7 +1226,13 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   fillHoverColor = i;
   labelString = j;
   labelFont = k;
+  labelOffsetX = 0;
+  labelOffsetY = 0;
+  labelAlign = -1;
   icon = l;
+  iconOffsetX = 0;
+  iconOffsetY = 0;
+  iconAlign = -1;
   labelColor = m;
   labelHoverColor = n;
   iconColor = o;
@@ -1216,28 +1256,427 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
 }
 
 //------------------------------------------------------------------------//
+//label with offsets and icon without offsets
+
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                          String j, fontClass* k, int l, int m, int n, fontAwesome* o, uint16_t p, uint16_t q, uint16_t r, uint16_t s,
+                          bool t, bool u, bool v, bool w, bool x, bool y, bool z, bool aa, bool ab, bool ac,
+                          LCD_ILI9481* ad, XPT2046_Touchscreen* ae) {
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
+  radius = e;
+  borderColor = f;
+  borderHoverColor = g;
+  fillColor = h;
+  fillHoverColor = i;
+  labelString = j;
+  labelFont = k;
+  labelOffsetX = l;
+  labelOffsetY = m;
+  labelAlign = n;
+  icon = o;
+  iconOffsetX = 0;
+  iconOffsetY = 0;
+  iconAlign = -1;
+  labelColor = p;
+  labelHoverColor = q;
+  iconColor = r;
+  iconHoverColor = s;
+  buttonEnabled = t;
+  borderEnabled = u;
+  fillEnabled = v;
+  labelEnabled = w;
+  iconEnabled = x;
+  buttonHoverEnabled = y;
+  borderHoverEnabled = z;
+  fillHoverEnabled = aa;
+  labelHoverEnabled = ab;
+  iconHoverEnabled = ac;
+  lcdParent = ad;
+  touchParent = ae;
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
+//label without offsets, icon with offsets
+
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                          String j, fontClass* k, fontAwesome* l, int m, int n, int o, uint16_t p, uint16_t q, uint16_t r, uint16_t s,
+                          bool t, bool u, bool v, bool w, bool x, bool y, bool z, bool aa, bool ab, bool ac,
+                          LCD_ILI9481* ad, XPT2046_Touchscreen* ae) {
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
+  radius = e;
+  borderColor = f;
+  borderHoverColor = g;
+  fillColor = h;
+  fillHoverColor = i;
+  labelString = j;
+  labelFont = k;
+  labelOffsetX = 0;
+  labelOffsetY = 0;
+  labelAlign = -1;
+  icon = l;
+  iconOffsetX = m;
+  iconOffsetY = n;
+  iconAlign = o;
+  labelColor = p;
+  labelHoverColor = q;
+  iconColor = r;
+  iconHoverColor = s;
+  buttonEnabled = t;
+  borderEnabled = u;
+  fillEnabled = v;
+  labelEnabled = w;
+  iconEnabled = x;
+  buttonHoverEnabled = y;
+  borderHoverEnabled = z;
+  fillHoverEnabled = aa;
+  labelHoverEnabled = ab;
+  iconHoverEnabled = ac;
+  lcdParent = ad;
+  touchParent = ae;
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
+//both label and icon with offsets
+
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                          String j, fontClass* k, int l, int m, int n, fontAwesome* o, int p, int q, int r, uint16_t s, uint16_t t, uint16_t u, uint16_t v,
+                          bool w, bool x, bool y, bool z, bool aa, bool ab, bool ac, bool ad, bool ae, bool af,
+                          LCD_ILI9481* ag, XPT2046_Touchscreen* ah) {
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
+  radius = e;
+  borderColor = f;
+  borderHoverColor = g;
+  fillColor = h;
+  fillHoverColor = i;
+  labelString = j;
+  labelFont = k;
+  labelOffsetX = l;
+  labelOffsetY = m;
+  labelAlign = n;
+  icon = o;
+  iconOffsetX = p;
+  iconOffsetY = q;
+  iconAlign = r;
+  labelColor = s;
+  labelHoverColor = t;
+  iconColor = u;
+  iconHoverColor = v;
+  buttonEnabled = w;
+  borderEnabled = x;
+  fillEnabled = y;
+  labelEnabled = z;
+  iconEnabled = aa;
+  buttonHoverEnabled = ab;
+  borderHoverEnabled = ac;
+  fillHoverEnabled = ad;
+  labelHoverEnabled = ae;
+  iconHoverEnabled = af;
+  lcdParent = ag;
+  touchParent = ah;
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
+//label only, without offsets
+
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                          String j, fontClass* k, uint16_t l, uint16_t m, bool n, bool o, bool p, bool q, bool r, bool s, bool t, bool u,
+                          LCD_ILI9481* v, XPT2046_Touchscreen* w) {
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
+  radius = e;
+  borderColor = f;
+  borderHoverColor = g;
+  fillColor = h;
+  fillHoverColor = i;
+  labelString = j;
+  labelFont = k;
+  labelOffsetX = 0;
+  labelOffsetY = 0;
+  labelAlign = -1;
+  icon = NULL;
+  iconOffsetX = 0;
+  iconOffsetY = 0;
+  iconAlign = -1;
+  labelColor = l;
+  labelHoverColor = m;
+  iconColor = 0;
+  iconHoverColor = 0;
+  buttonEnabled = n;
+  borderEnabled = o;
+  fillEnabled = p;
+  labelEnabled = q;
+  iconEnabled = false;
+  buttonHoverEnabled = r;
+  borderHoverEnabled = s;
+  fillHoverEnabled = t;
+  labelHoverEnabled = u;
+  iconHoverEnabled = false;
+  lcdParent = v;
+  touchParent = w;
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
+//label only, with offsets
+
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                          String j, fontClass* k, int l, int m, int n, uint16_t o, uint16_t p, bool q, bool r, bool s, bool t, bool u, bool v, bool w, bool x,
+                          LCD_ILI9481* y, XPT2046_Touchscreen* z) {
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
+  radius = e;
+  borderColor = f;
+  borderHoverColor = g;
+  fillColor = h;
+  fillHoverColor = i;
+  labelString = j;
+  labelFont = k;
+  labelOffsetX = l;
+  labelOffsetY = m;
+  labelAlign = n;
+  icon = NULL;
+  iconOffsetX = 0;
+  iconOffsetY = 0;
+  iconAlign = -1;
+  labelColor = o;
+  labelHoverColor = p;
+  iconColor = 0;
+  iconHoverColor = 0;
+  buttonEnabled = q;
+  borderEnabled = r;
+  fillEnabled = s;
+  labelEnabled = t;
+  iconEnabled = false;
+  buttonHoverEnabled = u;
+  borderHoverEnabled = v;
+  fillHoverEnabled = w;
+  labelHoverEnabled = x;
+  iconHoverEnabled = false;
+  lcdParent = y;
+  touchParent = z;
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
+//icon only, without offsets
+
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                          String j, fontAwesome* k, uint16_t l, uint16_t m, bool n, bool o, bool p, bool q, bool r, bool s, bool t, bool u,
+                          LCD_ILI9481* v, XPT2046_Touchscreen* w) {
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
+  radius = e;
+  borderColor = f;
+  borderHoverColor = g;
+  fillColor = h;
+  fillHoverColor = i;
+  labelString = j;
+  labelFont = NULL;
+  labelOffsetX = 0;
+  labelOffsetY = 0;
+  labelAlign = -1;
+  icon = k;
+  iconOffsetX = 0;
+  iconOffsetY = 0;
+  iconAlign = -1; //means it's not set
+  labelColor = 0;
+  labelHoverColor = 0;
+  iconColor = l;
+  iconHoverColor = m;
+  buttonEnabled = n;
+  borderEnabled = o;
+  fillEnabled = p;
+  labelEnabled = false;
+  iconEnabled = q;
+  buttonHoverEnabled = r;
+  borderHoverEnabled = s;
+  fillHoverEnabled = t;
+  labelHoverEnabled = false;
+  iconHoverEnabled = u;
+  lcdParent = v;
+  touchParent = w;
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
+//icon only, with offsets
+
+buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e, uint16_t f, uint16_t g, uint16_t h, uint16_t i,
+                          String j, fontAwesome* k, int l, int m, int n, uint16_t o, uint16_t p, bool q, bool r, bool s, bool t, bool u, bool v, bool w, bool x,
+                          LCD_ILI9481* y, XPT2046_Touchscreen* z) {
+  buttonX = a;
+  buttonY = b;
+  buttonWidth = c;
+  buttonHeight = d;
+  radius = e;
+  borderColor = f;
+  borderHoverColor = g;
+  fillColor = h;
+  fillHoverColor = i;
+  labelString = j;
+  labelFont = NULL;
+  labelOffsetX = 0;
+  labelOffsetY = 0;
+  labelAlign = -1;
+  icon = k;
+  iconOffsetX = l;
+  iconOffsetY = m;
+  iconAlign = n;
+  labelColor = 0;
+  labelHoverColor = 0;
+  iconColor = o;
+  iconHoverColor = p;
+  buttonEnabled = q;
+  borderEnabled = r;
+  fillEnabled = s;
+  labelEnabled = false;
+  iconEnabled = t;
+  buttonHoverEnabled = u;
+  borderHoverEnabled = v;
+  fillHoverEnabled = w;
+  labelHoverEnabled = false;
+  iconHoverEnabled = x;
+  lcdParent = y;
+  touchParent = z;
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  activeState = false;
+}
+
+//------------------------------------------------------------------------//
 
 void buttonClass::draw () {
   if(buttonEnabled) {
     if(buttonHoverEnabled && (!stateChange) && buttonTouched()) {
       if(stateChange) {
         if(fillEnabled) {
-          if(fillHoverEnabled) lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillHoverColor);
-          else lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+          if(fillHoverEnabled) {
+            lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillHoverColor);
+          }
+          else {
+            lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+          }
         }
         if(borderEnabled) {
-          if(borderHoverEnabled) lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderHoverColor);
-          else lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+          if(borderHoverEnabled) {
+            lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderHoverColor);
+          }
+          else {
+            lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+          }
         }
         if(iconEnabled) {
           icon->getSize();
-          if(iconHoverEnabled) lcdParent->drawIcon(icon, buttonX+(int((buttonWidth - icon->glyphWidth)/2)), buttonY+(int((buttonHeight - icon->glyphHeight)/2)), iconHoverColor); //no need of bg color
-          else lcdParent->drawIcon(icon, buttonX+(int((buttonWidth - icon->glyphWidth)/2)), buttonY+(int((buttonHeight - icon->glyphHeight)/2)), iconColor); //no need of bg color
+
+          if(iconHoverEnabled) {
+            if(iconAlign == 1) { //top center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconHoverColor); //no need of bg color
+            }
+            else if(iconAlign == 2) { //right center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconHoverColor); //no need of bg color
+            }
+            else if(iconAlign == 3) { //bottom center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconHoverColor); //no need of bg color
+            }
+            else if(iconAlign == 4) { //left center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, labelHoverColor); //no need of bg color
+            }
+            else { //center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconHoverColor); //no need of bg color
+            }
+          }
+          else {
+            if(iconAlign == 1) { //top center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconColor); //no need of bg color
+            }
+            else if(iconAlign == 2) { //right center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+            }
+            else if(iconAlign == 3) { //bottom center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconColor); //no need of bg color
+            }
+            else if(iconAlign == 4) { //left center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+            }
+            else { //center
+              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+            }
+          }
         }
         if(labelEnabled) {
           labelFont->getSize(labelString);
-          if(labelHoverEnabled) lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), (buttonY-2)+(int((buttonHeight - labelFont->glyphHeight)/2)), labelHoverColor, labelFont); //no need of bg color
-          else lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), (buttonY-2)+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+
+          if(labelHoverEnabled) {
+            if(labelAlign == 1) { //top center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+            }
+            else if(labelAlign == 2) { //right center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+            }
+            else if(labelAlign == 3) { //bottom center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+            }
+            else if(labelAlign == 4) { //left center
+              lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+            }
+            else { //center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+            }
+          }
+          else {
+            if(labelAlign == 1) { //top center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            }
+            else if(labelAlign == 2) { //right center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            }
+            else if(labelAlign == 3) { //bottom center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            }
+            else if(labelAlign == 4) { //left center
+              lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            }
+            else { //center
+              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            }
+          }
         }
         updateState(false);
       }
@@ -1248,16 +1687,48 @@ void buttonClass::draw () {
         if(fillEnabled) {
           lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
         }
+
         if(borderEnabled) {
           lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
         }
+
         if(iconEnabled) {
           icon->getSize();
-          lcdParent->drawIcon(icon, buttonX+(int((buttonWidth - icon->glyphWidth)/2)), buttonY+(int((buttonHeight - icon->glyphHeight)/2)), iconColor); //no need of bg color
+          if(iconAlign == 1) { //top center
+            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconColor); //no need of bg color
+          }
+          else if(iconAlign == 2) { //right center
+            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+          }
+          else if(iconAlign == 3) { //bottom center
+            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconColor); //no need of bg color
+          }
+          else if(iconAlign == 4) { //left center
+            lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+          }
+          else { //center
+            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+          }
         }
+
         if(labelEnabled) {
           labelFont->getSize(labelString);
-          lcdParent->printText(labelString, buttonX+(int((buttonWidth - labelFont->glyphWidth)/2)), (buttonY-2)+(int((buttonHeight - labelFont->glyphHeight)/2)), labelColor, labelFont); //no need of bg color
+
+          if(labelAlign == 1) { //top center
+            lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+          }
+          else if(labelAlign == 2) { //right center
+            lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+          }
+          else if(labelAlign == 3) { //bottom center
+            lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+          }
+          else if(labelAlign == 4) { //left center
+            lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+          }
+          else { //center
+            lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+          }
         }
         updateState(false);
       }
@@ -1280,6 +1751,21 @@ void buttonClass::show () {
 
 void buttonClass::hide () {
   buttonEnabled = false;
+}
+
+//------------------------------------------------------------------------//
+
+void buttonClass::reset() {
+  currentTouchState = false;
+  prevTouchState = false;
+  stateChange = true;
+  // activeState = false;
+}
+
+//------------------------------------------------------------------------//
+
+void buttonClass::clear(uint32_t bgColor) {
+  lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, bgColor);
 }
 
 //------------------------------------------------------------------------//
