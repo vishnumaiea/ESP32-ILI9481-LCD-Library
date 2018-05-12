@@ -6,7 +6,7 @@
 //                                                                        //
 //  Filename : ESP32_ILI9481.cpp                                          //
 //  Description : Part of ILI9481 TFT LCD library.                        //
-//  Library version : 2.6                                                 //
+//  Library version : 2.7                                                 //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -16,7 +16,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 11:38:38 PM, 03-05-2018, Thursday         //
+//  File last modified : +05:30 12:43:23 PM, 12-05-2018, Saturday         //
 //                                                                        //
 //========================================================================//
 
@@ -1238,6 +1238,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   iconColor = o;
   iconHoverColor = p;
   buttonEnabled = q;
+  buttonFunctional = true;
   borderEnabled = r;
   fillEnabled = s;
   labelEnabled = t;
@@ -1285,6 +1286,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   iconColor = r;
   iconHoverColor = s;
   buttonEnabled = t;
+  buttonFunctional = true;
   borderEnabled = u;
   fillEnabled = v;
   labelEnabled = w;
@@ -1332,6 +1334,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   iconColor = r;
   iconHoverColor = s;
   buttonEnabled = t;
+  buttonFunctional = true;
   borderEnabled = u;
   fillEnabled = v;
   labelEnabled = w;
@@ -1378,6 +1381,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   labelHoverColor = t;
   iconColor = u;
   iconHoverColor = v;
+  buttonFunctional = true;
   buttonEnabled = w;
   borderEnabled = x;
   fillEnabled = y;
@@ -1424,6 +1428,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   labelHoverColor = m;
   iconColor = 0;
   iconHoverColor = 0;
+  buttonFunctional = true;
   buttonEnabled = n;
   borderEnabled = o;
   fillEnabled = p;
@@ -1470,6 +1475,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   labelHoverColor = p;
   iconColor = 0;
   iconHoverColor = 0;
+  buttonFunctional = true;
   buttonEnabled = q;
   borderEnabled = r;
   fillEnabled = s;
@@ -1516,6 +1522,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   labelHoverColor = 0;
   iconColor = l;
   iconHoverColor = m;
+  buttonFunctional = true;
   buttonEnabled = n;
   borderEnabled = o;
   fillEnabled = p;
@@ -1562,6 +1569,7 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
   labelHoverColor = 0;
   iconColor = o;
   iconHoverColor = p;
+  buttonFunctional = true;
   buttonEnabled = q;
   borderEnabled = r;
   fillEnabled = s;
@@ -1584,22 +1592,26 @@ buttonClass::buttonClass (int16_t a, int16_t b, int16_t c, int16_t d, int16_t e,
 
 void buttonClass::draw () {
   if(buttonEnabled) {
-    if(buttonHoverEnabled && (!stateChange) && buttonTouched()) {
+    if(buttonHoverEnabled && (!stateChange) && (buttonFunctional) && buttonTouched() ) {
       if(stateChange) {
         if(fillEnabled) {
           if(fillHoverEnabled) {
-            lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillHoverColor);
+            if(buttonFunctional) lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillHoverColor);
+            else lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, DISABLED_BG);
           }
           else {
-            lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+            if(buttonFunctional) lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+            else lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, DISABLED_BG);
           }
         }
         if(borderEnabled) {
           if(borderHoverEnabled) {
-            lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderHoverColor);
+            if(buttonFunctional) lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderHoverColor);
+            else lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, DISABLED_BG);
           }
           else {
-            lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+            if(buttonFunctional) lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+            else lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, DISABLED_BG);
           }
         }
         if(iconEnabled) {
@@ -1607,74 +1619,95 @@ void buttonClass::draw () {
 
           if(iconHoverEnabled) {
             if(iconAlign == 1) { //top center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconHoverColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconHoverColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else if(iconAlign == 2) { //right center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconHoverColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconHoverColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else if(iconAlign == 3) { //bottom center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconHoverColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconHoverColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else if(iconAlign == 4) { //left center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, labelHoverColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconHoverColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else { //center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconHoverColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconHoverColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
           }
           else {
             if(iconAlign == 1) { //top center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else if(iconAlign == 2) { //right center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else if(iconAlign == 3) { //bottom center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else if(iconAlign == 4) { //left center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
             else { //center
-              lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+              if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor);
+              else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
             }
           }
         }
+
         if(labelEnabled) {
           labelFont->getSize(labelString);
 
           if(labelHoverEnabled) {
             if(labelAlign == 1) { //top center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelHoverColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else if(labelAlign == 2) { //right center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else if(labelAlign == 3) { //bottom center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelHoverColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else if(labelAlign == 4) { //left center
-              lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else { //center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelHoverColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
           }
           else {
             if(labelAlign == 1) { //top center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else if(labelAlign == 2) { //right center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else if(labelAlign == 3) { //bottom center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else if(labelAlign == 4) { //left center
-              lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
             else { //center
-              lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+              if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont);
+              else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
             }
           }
         }
@@ -1685,29 +1718,36 @@ void buttonClass::draw () {
     else {
       if(stateChange) {
         if(fillEnabled) {
-          lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+          if(buttonFunctional) lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, fillColor);
+          else lcdParent->fillRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, DISABLED_BG);
         }
 
         if(borderEnabled) {
-          lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+          if(buttonFunctional) lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, borderColor);
+          else lcdParent->drawRoundRectangle(buttonX, buttonY, buttonWidth, buttonHeight, radius, DISABLED_BG);
         }
 
         if(iconEnabled) {
           icon->getSize();
           if(iconAlign == 1) { //top center
-            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconColor); //no need of bg color
+            if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, iconColor);
+            else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY - icon->glyphY, DISABLED_FG); //no need of bg color
           }
           else if(iconAlign == 2) { //right center
-            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+            if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor);
+            else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int(buttonWidth - icon->glyphWidth)), buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
           }
           else if(iconAlign == 3) { //bottom center
-            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconColor); //no need of bg color
+            if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, iconColor);
+            else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int(buttonHeight - icon->glyphHeight)) - icon->glyphY, DISABLED_FG); //no need of bg color
           }
           else if(iconAlign == 4) { //left center
-            lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+            if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor);
+            else lcdParent->drawIcon(icon, buttonX + iconOffsetX - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
           }
           else { //center
-            lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor); //no need of bg color
+            if(buttonFunctional) lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, iconColor);
+            else lcdParent->drawIcon(icon, buttonX + iconOffsetX + (int((buttonWidth - icon->glyphWidth)/2)) - icon->glyphX, buttonY + iconOffsetY + (int((buttonHeight - icon->glyphHeight)/2)) - icon->glyphY, DISABLED_FG); //no need of bg color
           }
         }
 
@@ -1715,19 +1755,24 @@ void buttonClass::draw () {
           labelFont->getSize(labelString);
 
           if(labelAlign == 1) { //top center
-            lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, labelColor, labelFont);
+            else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
           }
           else if(labelAlign == 2) { //right center
-            lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont);
+            else lcdParent->printText(labelString, buttonX + labelOffsetX + (int(buttonWidth - labelFont->glyphWidth)), buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
           }
           else if(labelAlign == 3) { //bottom center
-            lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, labelColor, labelFont);
+            else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int(buttonHeight - labelFont->glyphHeight)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
           }
           else if(labelAlign == 4) { //left center
-            lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont);
+            else lcdParent->printText(labelString, buttonX + labelOffsetX - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
           }
           else { //center
-            lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont); //no need of bg color
+            if(buttonFunctional) lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, labelColor, labelFont);
+            else lcdParent->printText(labelString, buttonX + labelOffsetX + (int((buttonWidth - labelFont->glyphWidth)/2)) - labelFont->glyphX, buttonY + labelOffsetY + (int((buttonHeight - labelFont->glyphHeight)/2)) - labelFont->glyphY, DISABLED_FG, labelFont); //no need of bg color
           }
         }
         updateState(false);
@@ -1753,6 +1798,13 @@ void buttonClass::hide () {
   buttonEnabled = false;
 }
 
+void buttonClass::disable() {
+  buttonFunctional = false;
+}
+
+void buttonClass::enable() {
+  buttonFunctional = true;
+}
 //------------------------------------------------------------------------//
 
 void buttonClass::reset() {
