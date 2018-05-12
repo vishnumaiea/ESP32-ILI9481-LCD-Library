@@ -6,7 +6,7 @@
 //                                                                        //
 //  Filename : ESP32_ILI9481.h                                            //
 //  Description : Part of ILI9481 TFT LCD library.                        //
-//  Library version : 2.6                                                 //
+//  Library version : 2.7                                                 //
 //  Author : Vishnu M Aiea                                                //
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
@@ -16,7 +16,7 @@
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
 //                                                                        //
-//  File last modified : +05:30 11:38:53 PM, 03-05-2018, Thursday         //
+//  File last modified : +05:30 12:43:40 PM, 12-05-2018, Saturday         //
 //                                                                        //
 //========================================================================//
 
@@ -56,6 +56,12 @@
 #define   GAMMA_SETTING                   0xC8U //12 param
 
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; } //swaps two 16 bit values
+
+//========================================================================//
+//RGB565 color values
+
+#define DISABLED_FG 0xEF3C
+#define DISABLED_BG 0xCE59
 
 //========================================================================//
 //class declarations
@@ -233,6 +239,7 @@ class buttonClass {
     uint16_t iconColor;
     uint16_t iconHoverColor;
     bool buttonEnabled;
+    bool buttonFunctional;
     bool borderEnabled;
     bool fillEnabled;
     bool labelEnabled;
@@ -289,6 +296,8 @@ class buttonClass {
     void draw();
     void show();
     void hide();
+    void enable();
+    void disable();
     void reset();
     void clear(uint32_t);
     void setXY(int, int);
