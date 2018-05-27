@@ -11,7 +11,7 @@
 //  Source : https://github.com/vishnumaiea/ESP32-ILI9481-LCD-Library     //
 //  Author's website : www.vishnumaiea.in                                 //
 //  Initial release : IST 11:51 PM 07-04-2018, Saturday                   //
-//  License : GNU GPL version 3.0                                         //
+//  License : MIT                                                         //
 //  Additional source license/s :                                         //
 //    1. BSD license @ Adafruit Industries                                //
 //       https://github.com/adafruit/Adafruit-GFX-Library                 //
